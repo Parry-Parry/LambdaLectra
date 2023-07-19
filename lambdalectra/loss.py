@@ -14,7 +14,7 @@ class LambdaRankLoss:
                  num_items : int = None, 
                  batch_size : int = None, 
                  sigma : float = 1.0, 
-                 ndcg_at : int = 50, 
+                 ndcg_at : int = 10, 
                  dtype : torch.dtype = torch.float32, 
                  lambda_normalization : bool = True,
                  pred_truncate_at : int = None, 
