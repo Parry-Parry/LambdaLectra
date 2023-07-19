@@ -1,4 +1,4 @@
-from .trainer import LambdaWrapper
+from .trainer import LambdaTrainer
 from .loader import PairDataset, Loader
 import ir_datasets as irds
 from transformers import ElectraForSequenceClassification, ElectraTokenizer
@@ -6,6 +6,8 @@ from fire import Fire
 import pandas as pd
 from os.path import join
 import json
+from trec23.pipelines.baselines import load_splade, load_pisa
+from trec23 import CONFIG
 
 def main(model_name_or_path, 
          dataset, 
@@ -14,7 +16,8 @@ def main(model_name_or_path,
          batch_size,
          lr, 
          num_warmup_steps, 
-         num_training_steps):
+         num_training_steps,
+         mode = 'splade',):
     
     ds = irds.load(dataset)
 
@@ -25,12 +28,19 @@ def main(model_name_or_path,
     model = ElectraForSequenceClassification.from_pretrained(model_name_or_path, num_labels=2)
     tokenizer = ElectraTokenizer.from_pretrained(model_name_or_path)
 
-    retriever = None 
+    if mode == 'splade':
+        retriever = load_splade(CONFIG['SPLADE_MARCOv2_PATH'])
+    else:
+        retriever = load_pisa(CONFIG['PISA_MARCOv2_PATH'])
 
     loss_kwargs = {
+        'num_items': batch_size-1,
+        'batch_size': batch_size,
+        'sigma': 1.,
+        'ndcg_at': 10,
     }
 
-    wrapper = LambdaWrapper(model, retriever, tokenizer, lr, batch_size, num_neg=batch_size-1, loss_kwargs=loss_kwargs)
+    wrapper = LambdaTrainer(model, retriever, tokenizer, lr, batch_size, loss_kwargs=loss_kwargs)
     wrapper.train(train_loader, num_training_steps, num_warmup_steps)
 
     wrapper.model.save_pretrained(join(output_dir, 'model'))

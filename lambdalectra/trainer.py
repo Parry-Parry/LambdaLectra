@@ -14,14 +14,13 @@ from .loss import LambdaRankLoss, LambdaRankLossFn
 
 RND = 42
 
-class LambdaWrapper:
+class LambdaTrainer:
     def __init__(self, 
                  model,
                  retriever,
                  tokenizer,
                  lr, 
                  batch_size = 1,
-                 num_neg = 15,
                  loss_kwargs = {},) -> None:
 
         self.logs = {
@@ -39,7 +38,6 @@ class LambdaWrapper:
         self.optimizer = AdamW(self.model.parameters(), lr=lr)
 
         self.batch_size = batch_size
-        self.num_neg = num_neg
 
     def ranking_to_batch(self, ranking):
         queries = []
