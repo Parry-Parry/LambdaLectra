@@ -17,7 +17,9 @@ def main(model_name_or_path,
          lr, 
          num_warmup_steps, 
          num_training_steps,
-         mode = 'splade',):
+         mode = 'splade',
+         splade_path = None,
+         pisa_path = None):
     
     ds = irds.load(dataset)
 
@@ -29,9 +31,9 @@ def main(model_name_or_path,
     tokenizer = ElectraTokenizer.from_pretrained(model_name_or_path)
 
     if mode == 'splade':
-        retriever = load_splade(CONFIG['SPLADE_MARCOv2_PATH'])
+        retriever = load_splade(splade_path if splade_path else CONFIG['SPLADE_MARCOv2_PATH'])
     else:
-        retriever = load_pisa(CONFIG['PISA_MARCOv2_PATH'])
+        retriever = load_pisa(pisa_path if pisa_path else CONFIG['PISA_MARCOv2_PATH'])
 
     loss_kwargs = {
         'num_items': batch_size-1,
