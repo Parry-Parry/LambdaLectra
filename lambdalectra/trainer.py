@@ -1,7 +1,6 @@
 import pyterrier as pt
 if not pt.started():
     pt.init()
-from pyterrier.model import add_ranks
 from collections import defaultdict
 import time
 import torch 
@@ -20,7 +19,8 @@ class LambdaTrainer:
                  retriever,
                  tokenizer,
                  lr, 
-                 batch_size = 1,
+                 batch_size = 16,
+                 cutoff = 1000,
                  loss_kwargs = {},) -> None:
 
         self.logs = {
@@ -33,7 +33,8 @@ class LambdaTrainer:
         self.loss_component = LambdaRankLoss(**loss_kwargs)
         self.reshape = lambda x : x.view(self.loss_component.batch_size, self.loss_component.num_items)
 
-        self.retrieve = retriever % 100
+        self.retrieve = retriever % cutoff
+        self.cutoff = cutoff
         self.model = model
         self.tokenizer = tokenizer
         self.optimizer = AdamW(self.model.parameters(), lr=lr)
@@ -56,7 +57,7 @@ class LambdaTrainer:
         results = self.retrieve.transform(batch[['query_id', 'query']]) 
         results.drop(['score', 'rank'], axis=1, inplace=True)
 
-        index = np.linspace(0, len(results) - 1, self.loss_component.num_items - 1, dtype=int)
+        index = np.linspace(0, self.cutoff, self.loss_component.num_items - 1, dtype=int)
         results = results.groupby('query_id').apply(lambda x : x.iloc[index]).reset_index(drop=True)
 
         results['label'] = np.array([1, 0])
