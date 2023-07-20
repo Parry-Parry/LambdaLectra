@@ -1,7 +1,7 @@
 import pyterrier as pt
 if not pt.started():
     pt.init()
-
+from pyterrier.model import add_ranks
 from collections import defaultdict
 import time
 import torch 
@@ -31,6 +31,7 @@ class LambdaTrainer:
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.loss_component = LambdaRankLoss(**loss_kwargs)
+        self.reshape = lambda x : x.view(self.loss_component.batch_size, self.loss_component.num_items)
 
         self.retrieve = retriever % 100
         self.model = model
@@ -55,7 +56,7 @@ class LambdaTrainer:
         results = self.retrieve.transform(batch[['query_id', 'query']]) 
         results.drop(['score', 'rank'], axis=1, inplace=True)
 
-        index = np.linspace(0, len(results) - 1, self.num_neg, dtype=int)
+        index = np.linspace(0, len(results) - 1, self.loss_component.num_items - 1, dtype=int)
         results = results.groupby('query_id').apply(lambda x : x.iloc[index]).reset_index(drop=True)
 
         results['label'] = np.array([1, 0])
@@ -84,7 +85,7 @@ class LambdaTrainer:
         ids = inputs['input_ids'].to(self.device)
         mask = inputs['attention_mask'].to(self.device)
         labels = labels.to(self.device)
-        loss = LambdaRankLossFn(self.model(ids, attention_mask=mask).logits, batch.label, self.loss_component)  
+        loss = LambdaRankLossFn(self.reshape(self.model(ids, attention_mask=mask).logits), self.reshape(batch.label), self.loss_component)  
         
         self.optimizer.zero_grad()
         loss.backward()

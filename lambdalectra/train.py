@@ -14,6 +14,7 @@ def main(model_name_or_path,
          dataset_dir,
          output_dir,
          batch_size,
+         num_items,
          lr, 
          num_warmup_steps, 
          num_training_steps,
@@ -23,9 +24,10 @@ def main(model_name_or_path,
     
     ds = irds.load(dataset)
 
-    train_pairs = pd.read_csv(dataset_dir, header=None, names=['query_id', 'docno'])
+    train_pairs = pd.read_csv(dataset_dir, header=None, names=['query_id', 'doc_id_a, doc_id_b'])
+    train_pairs = train_pairs[['query_id', 'doc_id_a']].rename(columns={'doc_id_a' : 'docno'})
     train_dataset = PairDataset(train_pairs, ds)
-    train_loader = Loader(train_dataset, 1)
+    train_loader = Loader(train_dataset, batch_size)
     
     model = ElectraForSequenceClassification.from_pretrained(model_name_or_path, num_labels=2)
     tokenizer = ElectraTokenizer.from_pretrained(model_name_or_path)
@@ -33,10 +35,10 @@ def main(model_name_or_path,
     if mode == 'splade':
         retriever = load_splade(splade_path if splade_path else CONFIG['SPLADE_MARCOv2_PATH'])
     else:
-        retriever = load_pisa(pisa_path if pisa_path else CONFIG['PISA_MARCOv2_PATH'])
+        retriever = load_pisa(path=pisa_path if pisa_path else CONFIG['PISA_MARCOv2_PATH'])
 
     loss_kwargs = {
-        'num_items': batch_size-1,
+        'num_items': num_items,
         'batch_size': batch_size,
         'sigma': 1.,
         'ndcg_at': 10,
