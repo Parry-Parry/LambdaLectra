@@ -6,42 +6,35 @@ from fire import Fire
 import pandas as pd
 from os.path import join
 import json
-from trec23.pipelines.baselines import load_splade, load_pisa
+from trec23.pipelines.baselines import load_batchretrieve
 from trec23 import CONFIG
 
-def main(model_name_or_path, 
-         dataset, 
-         dataset_dir,
+def main(dataset_dir,
          output_dir,
          batch_size,
          num_items,
          lr, 
          num_warmup_steps, 
-         num_training_steps,
-         mode = 'splade',
-         splade_path = None,
-         pisa_path = None):
+         num_training_steps):
     
-    ds = irds.load(dataset)
+    query_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_PATH'], 'queries.tsv'), sep='\t', header=None, names=['query_id', 'query'])
+    doc_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_PATH'], 'docs.tsv'), sep='\t', header=None, names=['docno', 'text'])
 
-    train_pairs = pd.read_csv(dataset_dir, header=None, names=['query_id', 'doc_id_a, doc_id_b'])
+    train_pairs = pd.read_csv(dataset_dir, sep='\t', header=None, names=['query_id', 'doc_id_a, doc_id_b'])
     train_pairs = train_pairs[['query_id', 'doc_id_a']].rename(columns={'doc_id_a' : 'docno'})
-    train_dataset = PairDataset(train_pairs, ds)
+    train_dataset = PairDataset(train_pairs, query_lookup, doc_lookup)
     train_loader = Loader(train_dataset, batch_size)
     
-    model = ElectraForSequenceClassification.from_pretrained(model_name_or_path, num_labels=2)
-    tokenizer = ElectraTokenizer.from_pretrained(model_name_or_path)
+    model = ElectraForSequenceClassification.from_pretrained(CONFIG['ELECTRA_PATH'], num_labels=2)
+    tokenizer = ElectraTokenizer.from_pretrained(CONFIG['ELECTRA_PATH'])
 
-    if mode == 'splade':
-        retriever = load_splade(splade_path if splade_path else CONFIG['SPLADE_MARCOv2_PATH'])
-    else:
-        retriever = load_pisa(path=pisa_path if pisa_path else CONFIG['PISA_MARCOv2_PATH'])
+    retriever = load_batchretrieve(CONFIG['MSMARCOv1_PATH'], model="BM25")
 
     loss_kwargs = {
         'num_items': num_items,
         'batch_size': batch_size,
         'sigma': 1.,
-        'ndcg_at': 10,
+        'ndcg_at': 50,
     }
 
     wrapper = LambdaTrainer(model, retriever, tokenizer, lr, batch_size, loss_kwargs=loss_kwargs)

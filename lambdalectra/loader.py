@@ -1,11 +1,8 @@
 import pandas as pd
 
 class PairDataset:
-    def __init__(self, pairs, corpus):
-        docs = pd.DataFrame(corpus.docs_iter()).set_index('doc_id').text.to_dict()
-        queries = pd.DataFrame(corpus.queries_iter()).set_index('query_id').text.to_dict()
-
-        self.data = [{'query_id' : q, 'query' : queries[q], 'docno' : p, 'text' : docs[p]} for q, p in pairs]
+    def __init__(self, pairs, query_lookup, doc_lookup) -> None:
+        self.data = [{'query_id' : q, 'query' : query_lookup[q], 'docno' : p, 'text' : doc_lookup[p]} for q, p in pairs]
 
     def __len__(self):
         return len(self.data)

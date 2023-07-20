@@ -33,7 +33,8 @@ class LambdaTrainer:
         self.loss_component = LambdaRankLoss(**loss_kwargs)
         self.reshape = lambda x : x.view(self.loss_component.batch_size, self.loss_component.num_items)
 
-        self.retrieve = retriever % cutoff
+        index = pt.get_dataset('irds:msmarco-passage')
+        self.retrieve = retriever % cutoff >> pt.text.get_text(index, 'text')
         self.cutoff = cutoff
         self.model = model
         self.tokenizer = tokenizer
