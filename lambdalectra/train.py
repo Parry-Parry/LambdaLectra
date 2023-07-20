@@ -9,16 +9,16 @@ import json
 from trec23.pipelines.baselines import load_batchretrieve
 from trec23 import CONFIG
 
-def main(dataset_dir,
-         output_dir,
-         batch_size,
-         num_items,
-         lr, 
-         num_warmup_steps, 
-         num_training_steps):
+def main(dataset_dir : str,
+         output_dir : str,
+         batch_size : int,
+         num_items : int,
+         lr : float, 
+         num_warmup_steps : int, 
+         num_training_steps : int):
     
-    query_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_PATH'], 'queries.tsv'), sep='\t', header=None, names=['query_id', 'query'])
-    doc_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_PATH'], 'docs.tsv'), sep='\t', header=None, names=['docno', 'text'])
+    query_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_TEXT_PATH'], 'queries.tsv'), sep='\t', header=None, names=['query_id', 'query'])
+    doc_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_TEXT_PATH'], 'docs.tsv'), sep='\t', header=None, names=['docno', 'text'])
 
     train_pairs = pd.read_csv(dataset_dir, sep='\t', header=None, names=['query_id', 'doc_id_a, doc_id_b'])
     train_pairs = train_pairs[['query_id', 'doc_id_a']].rename(columns={'doc_id_a' : 'docno'})
@@ -28,7 +28,7 @@ def main(dataset_dir,
     model = ElectraForSequenceClassification.from_pretrained(CONFIG['ELECTRA_PATH'], num_labels=2)
     tokenizer = ElectraTokenizer.from_pretrained(CONFIG['ELECTRA_PATH'])
 
-    retriever = load_batchretrieve(CONFIG['MSMARCOv1_PATH'], model="BM25")
+    retriever = load_batchretrieve(CONFIG['TERRIER_MARCOv1_PATH'], model="BM25")
 
     loss_kwargs = {
         'num_items': num_items,
