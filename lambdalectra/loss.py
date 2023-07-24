@@ -36,7 +36,7 @@ class LambdaRankLoss:
         self.setup()
     
     def get_pairwise_diffs_for_vector(self, x):
-        a, b = torch.meshgrid(x[:self.ndcg_at], torch.transpose(x))
+        a, b = torch.meshgrid(x[:self.ndcg_at], torch.transpose(x, 0, 1))
         return b - a
     
     def get_pairwise_diff_batch(self, x):
