@@ -92,7 +92,7 @@ class LambdaTrainer:
         ids = inputs['input_ids'].to(self.device)
         mask = inputs['attention_mask'].to(self.device)
         labels = labels.to(self.device)
-        loss = LambdaRankLossFn(self.reshape(self.model(ids, attention_mask=mask).logits), self.reshape(batch.label), self.loss_component)  
+        loss = LambdaRankLossFn(self.process_logits(self.model(ids, attention_mask=mask).logits), self.process_logits(batch.label), self.loss_component)  
         
         self.optimizer.zero_grad()
         loss.backward()
