@@ -1,5 +1,5 @@
-from .trainer import LambdaTrainer
-from .loader import PairDataset, Loader
+from trainer import LambdaTrainer
+from loader import PairDataset, Loader
 import ir_datasets as irds
 from transformers import ElectraForSequenceClassification, ElectraTokenizer
 from fire import Fire
