@@ -2,7 +2,7 @@ import pandas as pd
 
 class PairDataset:
     def __init__(self, pairs, query_lookup, doc_lookup) -> None:
-        self.data = [{'query_id' : q, 'query' : query_lookup[q], 'docno' : p, 'text' : doc_lookup[p]} for q, p in pairs]
+        self.data = [{'qid' : q, 'query' : query_lookup[q], 'docno' : p, 'text' : doc_lookup[p]} for q, p in pairs]
 
     def __len__(self):
         return len(self.data)
