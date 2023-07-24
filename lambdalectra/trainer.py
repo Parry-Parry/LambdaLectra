@@ -43,7 +43,7 @@ class LambdaTrainer:
         self.batch_size = batch_size
 
     def process_logits(self, logits):
-        probs = logits.softmax(dim=-1)[:, 0]
+        probs = logits.float().softmax(dim=-1)[:, 0]
         return self.reshape(probs)
 
     def ranking_to_batch(self, ranking):
