@@ -55,10 +55,10 @@ class LambdaRankLoss:
             self.pred_truncate_at = self.params_truncate_at
 
         self.ndcg_at = min(self.params_ndcg_at, self.num_items)
-        self.dcg_position_discounts = 1. / torch.log2((torch.range(self.pred_truncate_at) + 2).type(self.dtype))
+        self.dcg_position_discounts = 1. / torch.log2((torch.range(0, self.pred_truncate_at) + 2).type(self.dtype))
         self.top_position_discounts = self.dcg_position_discounts[:self.ndcg_at].view(self.ndcg_at, 1)
         self.swap_importance = torch.abs(self.get_pairwise_diffs_for_vector(self.dcg_position_discounts))
-        self.batch_indices = tile(unsqueeze(torch.range(self.batch_size), 1), [1, self.pred_truncate_at]).view(self.pred_truncate_at * self.batch_size, 1)
+        self.batch_indices = tile(unsqueeze(torch.range(0, self.batch_size), 1), [1, self.pred_truncate_at]).view(self.pred_truncate_at * self.batch_size, 1)
         self.mask = (1 - F.pad(torch.ones(self.ndcg_at), (0, self.pred_truncate_at - self.ndcg_at)).view(1, self.pred_truncate_at)).type(self.dtype)
         
     def __call__(self, y_true, y_pred):
