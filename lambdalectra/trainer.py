@@ -9,7 +9,7 @@ import ir_datasets
 
 from transformers import AdamW, get_linear_schedule_with_warmup
 
-from .loss import LambdaRankLoss, LambdaRankLossFn
+from loss import LambdaRankLoss, LambdaRankLossFn
 
 RND = 42
 
