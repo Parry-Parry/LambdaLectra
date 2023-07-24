@@ -74,9 +74,9 @@ class LambdaTrainer:
 
         # unfold the list of tuples into a dataframe with new columns docno, text and label
         results = results.explode('documents')
-        results['docno'] = results[0].apply(lambda x : x[0])
-        results['text'] = results[0].apply(lambda x : x[1])
-        results['label'] = results[0].apply(lambda x : x[2])
+        results['docno'] = results['documents'].apply(lambda x : x[0])
+        results['text'] = results['documents'].apply(lambda x : x[1])
+        results['label'] = results['documents'].apply(lambda x : x[2])
         results.drop('documents', axis=1, inplace=True)
         results = results.reset_index(drop=True)
 
