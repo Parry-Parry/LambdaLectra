@@ -52,7 +52,7 @@ class LambdaTrainer:
             docs.append(row.text)
             labels.append(row.label)
         
-        return (queries, docs), torch.Tensor(np.concatenate(labels, dim=0))
+        return (queries, docs), torch.Tensor(np.concatenate(labels, axis=0))
     
     def first_pass(self, batch):
         results = self.retrieve.transform(batch[['qid', 'query']]) 
