@@ -19,10 +19,10 @@ def main(output_dir : str,
     
     os.makedirs(output_dir, exist_ok=True)
     
-    query_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_TEXT_PATH'], 'queries.tsv'), sep='\t', header=None, names=['query_id', 'query'])
-    doc_lookup = pd.read_csv(join(CONFIG['MSMARCOv1_TEXT_PATH'], 'docs.tsv'), sep='\t', header=None, names=['docno', 'text'])
+    query_lookup = pd.read_csv(join(CONFIG['MARCOv1_TEXT_PATH'], 'queries.tsv'), sep='\t', header=None, names=['query_id', 'query'])
+    doc_lookup = pd.read_csv(join(CONFIG['MARCOv1_TEXT_PATH'], 'docs.tsv'), sep='\t', header=None, names=['docno', 'text'])
 
-    train_pairs = pd.read_csv(CONFIG['MSMARCOv1_TEXT_PATH'], 'triples_small.tsv', sep='\t', header=None, names=['query_id', 'doc_id_a, doc_id_b'])
+    train_pairs = pd.read_csv(CONFIG['MARCOv1_TEXT_PATH'], 'triples_small.tsv', sep='\t', header=None, names=['query_id', 'doc_id_a, doc_id_b'])
     train_pairs = train_pairs[['query_id', 'doc_id_a']].rename(columns={'doc_id_a' : 'docno'})
     train_dataset = PairDataset(train_pairs, query_lookup, doc_lookup)
     train_loader = Loader(train_dataset, batch_size)
