@@ -66,13 +66,11 @@ class LambdaTrainer:
         results = results.groupby(['qid', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
         # rename column 0 to documents
         results.rename(columns={0: 'documents'}, inplace=True)
-        for row in results.itertuples():
+        for i, row in enumerate(results.itertuples()):
             vals = lookup[row.qid]
             tmp = getattr(row, 'documents')
-            print(row)
-            print(tmp)
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
-            setattr(row, 'documents', tmp)
+            results.set_value(i, 'documents', tmp)
 
         # unfold the list of tuples into a dataframe with new columns docno, text and label
         results = results.explode('documents')
