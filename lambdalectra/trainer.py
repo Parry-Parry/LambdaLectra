@@ -84,6 +84,8 @@ class LambdaTrainer:
 
     def main_loop(self, batch):
         batch, labels = self.first_pass(batch)
+        print(len(batch[0]))
+        print(len(labels))
         inputs = self.tokenizer(batch[0], batch[1], padding=True, truncation=True, return_tensors='pt')
         ids = inputs['input_ids'].to(self.device)
         mask = inputs['attention_mask'].to(self.device)
