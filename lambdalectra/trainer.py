@@ -64,10 +64,10 @@ class LambdaTrainer:
 
         results['label'] = np.array([1, 0])
         lookup = batch.set_index('query_id')[['docno', 'text']].to_dict('index')
-        # collapse results to a qid, query and a list of tuples of docno, text and label
+        # collapse results to a query_id, query and a list of tuples of docno, text and label
         results = results.groupby(['query_id', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
         for row in results.itertuples():
-            vals = lookup[row.qid]
+            vals = lookup[row.query_id]
             tmp = getattr(row, 0)
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
             setattr(row, 0, tmp)
