@@ -64,18 +64,20 @@ class LambdaTrainer:
         lookup = batch.set_index('qid')[['docno', 'text']].to_dict('index')
         # collapse results to a qid, query and a list of tuples of docno, text and label
         results = results.groupby(['qid', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
+        # rename column 0 to documents
+        results.rename(columns={0: 'documents'}, inplace=True)
         for row in results.itertuples():
             vals = lookup[row.qid]
-            tmp = getattr(row, 0)
+            tmp = getattr(row, 'documents')
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
-            setattr(row, 0, tmp)
+            setattr(row, 'documents', tmp)
 
         # unfold the list of tuples into a dataframe with new columns docno, text and label
-        results = results.explode(0)
+        results = results.explode('documents')
         results['docno'] = results[0].apply(lambda x : x[0])
         results['text'] = results[0].apply(lambda x : x[1])
         results['label'] = results[0].apply(lambda x : x[2])
-        results.drop(0, axis=1, inplace=True)
+        results.drop('documents', axis=1, inplace=True)
         results = results.reset_index(drop=True)
 
         return self.ranking_to_batch(results)
