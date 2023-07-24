@@ -70,7 +70,7 @@ class LambdaTrainer:
             vals = lookup[row.qid]
             tmp = getattr(row, 'documents')
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
-            results.set_value(i, 'documents', tmp)
+            results.at[i, 'documents'] = tmp
 
         # unfold the list of tuples into a dataframe with new columns docno, text and label
         results = results.explode('documents')
