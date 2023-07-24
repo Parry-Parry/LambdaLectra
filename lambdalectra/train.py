@@ -24,6 +24,7 @@ def main(output_dir : str,
 
     train_pairs = pd.read_csv(join(CONFIG['MARCOv1_TEXT_PATH'], 'triples_small.tsv'), sep='\t', header=None, names=['query_id', 'doc_id_a', 'doc_id_b'])
     train_pairs = train_pairs[['query_id', 'doc_id_a']].rename(columns={'doc_id_a' : 'docno'})
+    train_pairs = dataset[['query_id', 'doc_id_a']].values.tolist()
     train_dataset = PairDataset(train_pairs, query_lookup, doc_lookup)
     train_loader = Loader(train_dataset, batch_size)
     
