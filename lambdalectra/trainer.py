@@ -55,19 +55,19 @@ class LambdaTrainer:
         return (queries, docs), torch.Tensor(np.concatenate(labels, dim=0))
     
     def first_pass(self, batch):
-        results = self.retrieve.transform(batch[['query_id', 'query']]) 
+        results = self.retrieve.transform(batch[['qid', 'query']]) 
         results.drop(['score', 'rank'], axis=1, inplace=True)
 
         index = np.linspace(0, self.cutoff, self.loss_component.num_items - 1, dtype=int)
         print(len(index))
-        results = results.groupby('query_id').apply(lambda x : x.iloc[index]).reset_index(drop=True)
+        results = results.groupby('qid').apply(lambda x : x.iloc[index]).reset_index(drop=True)
 
         results['label'] = np.array([1, 0])
-        lookup = batch.set_index('query_id')[['docno', 'text']].to_dict('index')
-        # collapse results to a query_id, query and a list of tuples of docno, text and label
-        results = results.groupby(['query_id', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
+        lookup = batch.set_index('qid')[['docno', 'text']].to_dict('index')
+        # collapse results to a qid, query and a list of tuples of docno, text and label
+        results = results.groupby(['qid', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
         for row in results.itertuples():
-            vals = lookup[row.query_id]
+            vals = lookup[row.qid]
             tmp = getattr(row, 0)
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
             setattr(row, 0, tmp)
