@@ -59,7 +59,7 @@ class LambdaTrainer:
         results.drop(['score', 'rank'], axis=1, inplace=True)
 
         index = np.linspace(0, self.cutoff, self.loss_component.num_items - 1, dtype=int)
-        print(len(index))
+        print(index)
         results = results.groupby('qid').apply(lambda x : x.iloc[index]).reset_index(drop=True)
 
         results['label'] = np.array([1, 0])
