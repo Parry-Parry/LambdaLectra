@@ -14,11 +14,11 @@ from loss import LambdaRankLoss, LambdaRankLossFn
 RND = 42
 
 class LambdaTrainer:
-    def __init__(self, 
+    def __init__(self,
                  model,
                  retriever,
                  tokenizer,
-                 lr, 
+                 lr,
                  batch_size = 16,
                  cutoff = 1000,
                  loss_kwargs = {},) -> None:
@@ -36,7 +36,7 @@ class LambdaTrainer:
         index = pt.get_dataset('irds:msmarco-passage/train/triples-small')
         self.retrieve = retriever % cutoff >> pt.text.get_text(index, 'text')
         self.cutoff = cutoff
-        self.model = model
+        self.model = model.to(self.device)
         self.tokenizer = tokenizer
         self.optimizer = AdamW(self.model.parameters(), lr=lr)
 
