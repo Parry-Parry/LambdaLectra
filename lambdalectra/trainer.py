@@ -42,6 +42,10 @@ class LambdaTrainer:
 
         self.batch_size = batch_size
 
+    def process_logits(self, logits):
+        probs = logits.softmax(dim=-1)[:, 0]
+        return self.reshape(probs)
+
     def ranking_to_batch(self, ranking):
         queries = []
         docs = []
@@ -51,7 +55,6 @@ class LambdaTrainer:
             queries.append(row.query)
             docs.append(row.text)
             labels.append(row.label)
-            print(row.label)
         
         return (queries, docs), torch.tensor(np.array(labels))
     
@@ -61,7 +64,7 @@ class LambdaTrainer:
 
         results = results.groupby('qid').apply(lambda x : x.iloc[np.linspace(0, len(x), self.loss_component.num_items - 1, endpoint=False, dtype=int)]).reset_index(drop=True)
 
-        results['label'] = [np.array([1, 0])] * len(results)
+        results['label'] = [np.array([0, 1])] * len(results)
         lookup = batch.set_index('qid')[['docno', 'text']].to_dict('index')
         # collapse results to a qid, query and a list of tuples of docno, text and label
         results = results.groupby(['qid', 'query'])[['docno', 'text', 'label']].apply(lambda x: list(x.itertuples(index=False, name=None))).reset_index()
@@ -70,7 +73,7 @@ class LambdaTrainer:
         for i, row in enumerate(results.itertuples()):
             vals = lookup[row.qid]
             tmp = getattr(row, 'documents')
-            tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
+            tmp.insert(0, (vals['docno'], vals['text'], np.array([1, 0])))
             results.at[i, 'documents'] = tmp
 
         # unfold the list of tuples into a dataframe with new columns docno, text and label
