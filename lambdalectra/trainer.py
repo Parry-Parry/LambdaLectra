@@ -69,6 +69,8 @@ class LambdaTrainer:
         for row in results.itertuples():
             vals = lookup[row.qid]
             tmp = getattr(row, 'documents')
+            print(row)
+            print(tmp)
             tmp.insert(0, (vals['docno'], vals['text'], np.array([0, 1])))
             setattr(row, 'documents', tmp)
 
