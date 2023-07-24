@@ -108,7 +108,7 @@ class LambdaTrainer:
         start = time.time()
         with _logger.pbar_raw(desc=f'train', total=num_training_steps // self.batch_size) as pbar:
             for i in range(num_training_steps // self.batch_size):
-                batch = next(train_loader)
+                batch = train_loader.get_batch(i)
                 loss = self.main_loop(batch)
 
                 self.logs['loss']['train'].append(loss.item())
