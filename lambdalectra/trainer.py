@@ -47,6 +47,8 @@ class LambdaTrainer:
         docs = []
         labels = []
 
+        print(len(ranking))
+
         for row in ranking.itertuples():
             queries.append(row.query)
             docs.append(row.text)
