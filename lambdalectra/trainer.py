@@ -58,10 +58,7 @@ class LambdaTrainer:
         results = self.retrieve.transform(batch[['qid', 'query']]) 
         results.drop(['score', 'rank'], axis=1, inplace=True)
 
-        index = np.linspace(0, self.cutoff, self.loss_component.num_items - 1, endpoint=False, dtype=int)
-
-        print(results.groupby('qid').count().reset_index())
-        results = results.groupby('qid').apply(lambda x : x.iloc[index]).reset_index(drop=True)
+        results = results.groupby('qid').apply(lambda x : x.iloc[np.linspace(0, len(x), self.loss_component.num_items - 1, endpoint=False, dtype=int)]).reset_index(drop=True)
 
         results['label'] = np.array([1, 0])
         lookup = batch.set_index('qid')[['docno', 'text']].to_dict('index')
